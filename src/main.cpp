@@ -55,17 +55,22 @@ void setup()
   MobiDOT.print("T", MobiDOT::Font::TEXT_13PX_BOLD);
   MobiDOT.update();
 
-  for (size_t i = 0; i < 20; i++)
-  {
-    if (i % 2 == 0)
-    {
-      MobiDOT.clear(true);
-    } else {
-      MobiDOT.clear(false);
-    }
-    MobiDOT.update();
-    delay(2000);
-  }
+  delay(1000);
+  MobiDOT.clear(true);
+  MobiDOT.update();
+
+  const char bitmap[] = {
+      0xff,
+      0xdb,
+      0xdb,
+      0xff,
+      0xff,
+      0xbd,
+      0xc3,
+      0xff,
+  };
+
+  MobiDOT.drawBitmap(bitmap, 8, 8, 0, 0, false);
 }
 
 void loop()

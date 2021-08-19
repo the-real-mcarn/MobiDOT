@@ -104,7 +104,7 @@ public:
      * @param type MobiDOT::Display type
      */
     void selectDisplay(MobiDOT::Display type);
-    
+
     /**
      * print function
      * Prints a string to the display using the currently selected font, 
@@ -134,6 +134,9 @@ public:
      */
     void clear(bool value = false);
 
+    void drawBitmap(const char data[], uint width, uint height, bool invert = false);
+    void drawBitmap(const char data[], uint width, uint height, uint x, uint y, bool invert = false);
+
 private:
     SoftwareSerial RS485;
     uint8_t PIN_CTRL;
@@ -162,9 +165,24 @@ private:
      * Contains the compiler macros at the top of mobidot.hpp for easy access using Display
      */
     const struct DisplayAttribute display[3] = {
-        {MOBIDOT_ADDRESS_FRONT, MobiDOT::Font::TEXT_16PX_BOLD, MOBIDOT_WIDTH_FRONT, MOBIDOT_HEIGHT_FRONT},
-        {MOBIDOT_ADDRESS_REAR, MobiDOT::Font::TEXT_13PX_BOLD, MOBIDOT_WIDTH_REAR, MOBIDOT_HEIGHT_REAR},
-        {MOBIDOT_ADDRESS_SIDE, MobiDOT::Font::TEXT_7PX_BOLD, MOBIDOT_WIDTH_SIDE, MOBIDOT_HEIGHT_SIDE},
+        {
+            MOBIDOT_ADDRESS_FRONT,
+            MobiDOT::Font::TEXT_16PX_BOLD,
+            MOBIDOT_WIDTH_FRONT,
+            MOBIDOT_HEIGHT_FRONT,
+        },
+        {
+            MOBIDOT_ADDRESS_REAR,
+            MobiDOT::Font::TEXT_13PX_BOLD,
+            MOBIDOT_WIDTH_REAR,
+            MOBIDOT_HEIGHT_REAR,
+        },
+        {
+            MOBIDOT_ADDRESS_SIDE,
+            MobiDOT::Font::TEXT_7PX_BOLD,
+            MOBIDOT_WIDTH_SIDE,
+            MOBIDOT_HEIGHT_SIDE,
+        },
     };
 
     /**
