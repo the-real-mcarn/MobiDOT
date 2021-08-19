@@ -5,7 +5,7 @@
 
 #include "mobidot/mobidot.hpp"
 
-MobiDOT MobiDOT(/* rx */ 5, /* tx */ 0, /* ctrl */ 4, /* light */ 2);
+MobiDOT MobiDOT(/* rx */ 5, /* tx */ 0, /* ctrl */ 4, /* light */ 3);
 
 // Compile time
 const char compile_date[] = __DATE__ " " __TIME__;
@@ -44,7 +44,8 @@ void setup()
   // MobiDOT.checkInit();
   MobiDOT.selectDisplay(MobiDOT::Display::FRONT);
   
-  MobiDOT.print("Hello World", MobiDOT::Font::TEXT_16PX);
+  MobiDOT.print("mobitec", MobiDOT::Font::TEXT_16PX, 18, 19);
+  MobiDOT.print("TM", MobiDOT::Font::TEXT_5PX, 80, 0);
   MobiDOT.update();
 }
 

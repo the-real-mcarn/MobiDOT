@@ -23,7 +23,6 @@
 #define MOBIDOT_BYTE_START 0xff
 #define MOBIDOT_BYTE_STOP 0xff
 #define MOBIDOT_MODE_ASCII 0xa2
-#define MOBIDOT_INIT_TIME 7500
 
 /* Front sign constants */
 #define MOBIDOT_ADDRESS_FRONT 0x06
@@ -91,7 +90,7 @@ public:
      * @param ctrl DE and RE pins of the RS485 module / ic
      * @param light Pin connected to the control pin of a relais to controls the led's of the display
      */
-    MobiDOT(const uint8_t rx, const uint8_t tx, const uint8_t ctrl, const uint8_t light = 255);
+    MobiDOT(const uint8_t rx, const uint8_t tx, const uint8_t ctrl, const uint8_t light = -1);
 
     /**
      * MobiDOT class deconstructor
@@ -99,32 +98,46 @@ public:
      */
     ~MobiDOT();
 
-    void checkInit();
-
+    /**
+     * selectDisplay function
+     * Selects a display to print to, this will be used until this function is called again
+     * @param type MobiDOT::Display type
+     */
     void selectDisplay(MobiDOT::Display type);
-
+    
     /**
      * print function
-     * Prints a string to the display using the currently selected font
-     * @param c Char array to print
+     * Prints a string to the display using the currently selected font, 
+     * keep in mind that some fonts require a certain offset in order to start on the first pixel of the display
+     * @param c[] String to print
+     * @param font Font to use
+     * @param offsetX Horizontal offset
+     * @param offsetY Vertical offset
      */
     void print(const char c[]);
     void print(const char c[], uint offsetX, uint offsetY);
     void print(const char c[], MobiDOT::Font font);
     void print(const char c[], MobiDOT::Font font, uint offsetX, uint offsetY);
 
+    /**
+     * update function
+     * Send the current display buffer to the display
+     * @returns True or false based on wether the transfer was successfull
+     */
     bool update();
 
     /**
      * clear function
-     * Clears the display
+     * Clears the currently selected display
+     * @param value Determines wether all dots will be turned 'on' (yellow side) or 'off' (black side)
+     * @returns True or false based on wether the transfer was successfull
      */
-    bool clear();
+    bool clear(bool value = false);
 
 private:
     SoftwareSerial RS485;
     uint8_t PIN_CTRL;
-    uint8_t PIN_LIGHT = 255;
+    int8_t PIN_LIGHT = -1;
 
     MobiDOT::Display DISPLAY_DEFAULT;
     char BUFFER_DATA[RS485_BUFFER_SIZE] = {0};
@@ -140,7 +153,6 @@ private:
     {
         char address;
         MobiDOT::Font defaultFont;
-        uint8_t offsetY;
         uint8_t width;
         uint8_t height;
     };
@@ -150,9 +162,9 @@ private:
      * Contains the compiler macros at the top of mobidot.hpp for easy access using Display
      */
     const struct DisplayAttribute display[3] = {
-        {MOBIDOT_ADDRESS_FRONT, MobiDOT::Font::TEXT_16PX_BOLD, 19, MOBIDOT_WIDTH_FRONT, MOBIDOT_HEIGHT_FRONT},
-        {MOBIDOT_ADDRESS_REAR, MobiDOT::Font::TEXT_13PX_BOLD, 10, MOBIDOT_WIDTH_REAR, MOBIDOT_HEIGHT_REAR},
-        {MOBIDOT_ADDRESS_SIDE, MobiDOT::Font::TEXT_7PX_BOLD, 0, MOBIDOT_WIDTH_SIDE, MOBIDOT_HEIGHT_SIDE},
+        {MOBIDOT_ADDRESS_FRONT, MobiDOT::Font::TEXT_16PX_BOLD, MOBIDOT_WIDTH_FRONT, MOBIDOT_HEIGHT_FRONT},
+        {MOBIDOT_ADDRESS_REAR, MobiDOT::Font::TEXT_13PX_BOLD, MOBIDOT_WIDTH_REAR, MOBIDOT_HEIGHT_REAR},
+        {MOBIDOT_ADDRESS_SIDE, MobiDOT::Font::TEXT_7PX_BOLD, MOBIDOT_WIDTH_SIDE, MOBIDOT_HEIGHT_SIDE},
     };
 
     /**

@@ -9,6 +9,9 @@
 
 #include "./mobidot.hpp"
 
+/**
+ * MobiDOT class constructors
+ */
 MobiDOT::MobiDOT(const uint8_t rx, const uint8_t tx, const uint8_t ctrl, const uint8_t light)
 {
     // Start software serial
@@ -21,7 +24,7 @@ MobiDOT::MobiDOT(const uint8_t rx, const uint8_t tx, const uint8_t ctrl, const u
     digitalWrite(this->PIN_CTRL, RS485_RX_PIN_VALUE);
 
     // Init light relais pin
-    if (light != 255)
+    if (light != -1)
     {
         this->PIN_LIGHT = light;
         pinMode(this->PIN_LIGHT, OUTPUT);
@@ -34,18 +37,9 @@ MobiDOT::~MobiDOT()
     this->RS485.end();
 }
 
-void MobiDOT::checkInit()
-{
-    // Wait for the MobiDOT display to be initialised properly
-    const uint setupTime = millis();
-    Serial.println(setupTime);
-    if (setupTime < MOBIDOT_INIT_TIME)
-    {
-        Serial.println("Waiting...");
-        delay(MOBIDOT_INIT_TIME - setupTime);
-    }
-}
-
+/**
+ * Public functions
+ */
 void MobiDOT::selectDisplay(MobiDOT::Display type)
 {
     this->DISPLAY_DEFAULT = type;
@@ -75,35 +69,42 @@ void MobiDOT::print(const char c[], MobiDOT::Font font, uint offsetX, uint offse
     {
         this->addHeader(this->DISPLAY_DEFAULT, this->BUFFER_DATA, this->BUFFER_SIZE);
     }
-    
-    this->BUFFER_DATA[this->BUFFER_SIZE] = 0xd2;
-    this->BUFFER_DATA[this->BUFFER_SIZE + 1] = offsetX;
-    this->BUFFER_DATA[this->BUFFER_SIZE + 2] = 0xd3;
-    this->BUFFER_DATA[this->BUFFER_SIZE + 3] = offsetY + this->display[(uint)this->DISPLAY_DEFAULT].offsetY;
-    this->BUFFER_DATA[this->BUFFER_SIZE + 4] = 0xd4;
-    this->BUFFER_DATA[this->BUFFER_SIZE + 5] = (char)font;
-    this->BUFFER_SIZE += 6;
+
+    uint *size = &this->BUFFER_SIZE;
+
+    this->BUFFER_DATA[*size] = 0xd2;
+    this->BUFFER_DATA[*size + 1] = offsetX;
+    this->BUFFER_DATA[*size + 2] = 0xd3;
+    this->BUFFER_DATA[*size + 3] = offsetY;
+    this->BUFFER_DATA[*size + 4] = 0xd4;
+    this->BUFFER_DATA[*size + 5] = (char)font;
+    *size += 6;
 
     for (size_t i = 0; i < strlen(c); i++)
     {
-        this->BUFFER_DATA[this->BUFFER_SIZE] = c[i];
-        this->BUFFER_SIZE += 1;
+        this->BUFFER_DATA[*size] = c[i];
+        *size += 1;
     }
 }
 
 bool MobiDOT::update()
 {
+    uint *size = &this->BUFFER_SIZE;
+
     // Add display footer and send
-    this->addFooter(this->BUFFER_DATA, this->BUFFER_SIZE);
-    bool result = this->sendBuffer(this->BUFFER_DATA, this->BUFFER_SIZE);
+    this->addFooter(this->BUFFER_DATA, *size);
+    bool result = this->sendBuffer(this->BUFFER_DATA, *size);
 
     // Clear current display buffer
     memset(this->BUFFER_DATA, 0, sizeof(this->BUFFER_DATA));
-    this->BUFFER_SIZE = 0;
+    *size = 0;
 
     return result;
 }
 
+/**
+ * Private functions
+ */
 void MobiDOT::addHeader(MobiDOT::Display type, char data[], uint &size)
 {
     // Serial.println(size);
