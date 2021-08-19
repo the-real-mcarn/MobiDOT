@@ -102,6 +102,36 @@ bool MobiDOT::update()
     return result;
 }
 
+void MobiDOT::clear(bool value)
+{
+    // Check if the current buffer is empty, if so add the MobiDOT header
+    if (this->BUFFER_DATA[0] != 0xff)
+    {
+        this->addHeader(this->DISPLAY_DEFAULT, this->BUFFER_DATA, this->BUFFER_SIZE);
+    }
+
+    uint *size = &this->BUFFER_SIZE;
+    const uint height = this->display[(uint)this->DISPLAY_DEFAULT].height;
+    const uint width = this->display[(uint)this->DISPLAY_DEFAULT].width;
+
+    for (size_t i = 0; i < ceil((float) height / 5); i++)
+    {
+        this->BUFFER_DATA[*size] = 0xd2;
+        this->BUFFER_DATA[*size + 1] = 0;
+        this->BUFFER_DATA[*size + 2] = 0xd3;
+        this->BUFFER_DATA[*size + 3] = 4 + (i * 5);
+        this->BUFFER_DATA[*size + 4] = 0xd4;
+        this->BUFFER_DATA[*size + 5] = (char)MobiDOT::Font::BITWISE;
+        *size += 6;
+
+        for (size_t j = 0; j < width; j++)
+        {
+            this->BUFFER_DATA[*size] = (value) ? 0x3f : 0x20;
+            *size += 1;
+        }
+    }
+}
+
 /**
  * Private functions
  */

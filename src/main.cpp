@@ -14,6 +14,12 @@ const char compile_date[] = __DATE__ " " __TIME__;
 // Wifi init
 ESP8266WiFiMulti WiFiMulti;
 
+// SERIAL RECEIVE VARS
+#define LF 0x0A
+
+char angle_str[10];
+int idx = 0;
+
 void setup()
 {
   // Serial setup
@@ -41,14 +47,41 @@ void setup()
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
 
-  // MobiDOT.checkInit();
-  MobiDOT.selectDisplay(MobiDOT::Display::FRONT);
-  
-  MobiDOT.print("mobitec", MobiDOT::Font::TEXT_16PX, 18, 19);
-  MobiDOT.print("TM", MobiDOT::Font::TEXT_5PX, 80, 0);
+  MobiDOT.selectDisplay(MobiDOT::Display::REAR);
+
+  // MobiDOT.print("mobitec", MobiDOT::Font::TEXT_16PX, 18, 19);
+  // MobiDOT.print("TM", MobiDOT::Font::TEXT_5PX, 80, 0);
+
+  MobiDOT.print("T", MobiDOT::Font::TEXT_13PX_BOLD);
   MobiDOT.update();
+
+  for (size_t i = 0; i < 20; i++)
+  {
+    if (i % 2 == 0)
+    {
+      MobiDOT.clear(true);
+    } else {
+      MobiDOT.clear(false);
+    }
+    MobiDOT.update();
+    delay(2000);
+  }
 }
 
 void loop()
 {
+  if (Serial.available() > 0)
+  {
+    angle_str[idx] = Serial.read();
+    if (angle_str[idx] == LF)
+    {
+      Serial.print("Printing: ");
+      angle_str[idx - 1] = 0;
+      Serial.println(angle_str);
+      MobiDOT.print(angle_str, MobiDOT::Font::TEXT_13PX_BOLD, 0, 0);
+      MobiDOT.update();
+      idx = -1;
+    }
+    idx++;
+  }
 }

@@ -132,7 +132,7 @@ public:
      * @param value Determines wether all dots will be turned 'on' (yellow side) or 'off' (black side)
      * @returns True or false based on wether the transfer was successfull
      */
-    bool clear(bool value = false);
+    void clear(bool value = false);
 
 private:
     SoftwareSerial RS485;
