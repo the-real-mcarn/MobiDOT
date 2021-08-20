@@ -126,7 +126,7 @@ void MobiDOT::clear(bool value)
 
         for (size_t j = 0; j < width; j++)
         {
-            this->BUFFER_DATA[*size] = (value) ? 0x2f : 0x20;
+            this->BUFFER_DATA[*size] = (value) ? 0x3f : 0x20;
             *size += 1;
         }
     }
@@ -139,38 +139,42 @@ void MobiDOT::drawBitmap(const char data[], uint width, uint height, bool invert
 
 void MobiDOT::drawBitmap(const char data[], uint width, uint height, uint x, uint y, bool invert)
 {
-    Serial.println("\n<<< BITMAP >>>");
-    for (size_t i = 0; i < height; i++)
+    // Check if the current buffer is empty, if so add the MobiDOT header
+    if (this->BUFFER_DATA[0] != 0xff)
     {
-        Serial.println(data[i], BIN);
+        this->addHeader(this->DISPLAY_DEFAULT, this->BUFFER_DATA, this->BUFFER_SIZE);
     }
 
-    Serial.println("\n<<< BITWISE >>>");
+    uint *size = &this->BUFFER_SIZE;
+
     for (size_t i = 0; i < ceil((float)height / 5); i++)
     {
+        this->BUFFER_DATA[*size] = 0xd2;
+        this->BUFFER_DATA[*size + 1] = x;
+        this->BUFFER_DATA[*size + 2] = 0xd3;
+        this->BUFFER_DATA[*size + 3] = y + 4 + (i * 5);
+        this->BUFFER_DATA[*size + 4] = 0xd4;
+        this->BUFFER_DATA[*size + 5] = (char)MobiDOT::Font::BITWISE;
+        *size += 6;
+
         for (size_t j = 0; j < width; j++)
         {
             char result = 0x01;
-            Serial.print(j);
-            Serial.print(": ");
-            for (int k = 4; k >= 0; k--)
+            for (int8_t k = 4; k >= 0; k--)
             {
                 result = result << 1;
                 if ((i * 5 + k) < height)
                 {
-                    if (data[((i * 5) + k)] >> j & B00000001)
+                    const int8_t value = data[((i * 5) + k)] >> j & B00000001;
+                    if (invert == value)
                     {
                         result = result | B00000001;
                     }
-                    Serial.print((data[((i * 5) + k)] >> j) & B00000001, BIN);
-                }
-                else
-                {
-                    result = result | B00000001;
                 }
             }
-            Serial.print("  ->  ");
-            Serial.println(result, BIN);
+            // Result
+            this->BUFFER_DATA[*size] = result;
+            *size += 1;
         }
     }
 }

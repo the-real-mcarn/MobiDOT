@@ -134,6 +134,16 @@ public:
      */
     void clear(bool value = false);
 
+    /**
+     * drawBitmap function
+     * Draws a bitmap image encoded using image2cpp on the specified coordinates
+     * @param data Bitmap data
+     * @param width Width of the to be printed image
+     * @param height Height of the to be printed image
+     * @param x Horizontal offset
+     * @param y Vertical offset
+     * @param invert Inverts image data if true
+     */
     void drawBitmap(const char data[], uint width, uint height, bool invert = false);
     void drawBitmap(const char data[], uint width, uint height, uint x, uint y, bool invert = false);
 

@@ -55,9 +55,12 @@ void setup()
   MobiDOT.print("T", MobiDOT::Font::TEXT_13PX_BOLD);
   MobiDOT.update();
 
-  delay(1000);
+  delay(5000);
+
   MobiDOT.clear(true);
   MobiDOT.update();
+
+  delay(5000);
 
   const char bitmap[] = {
       0xff,
@@ -70,7 +73,28 @@ void setup()
       0xff,
   };
 
+  // Normal
   MobiDOT.drawBitmap(bitmap, 8, 8, 0, 0, false);
+  MobiDOT.update();
+
+  delay(5000);
+
+  // Inverted
+  MobiDOT.drawBitmap(bitmap, 8, 8, 0, 0, true);
+  MobiDOT.update();
+
+  delay(5000);
+
+  // Other location
+  MobiDOT.drawBitmap(bitmap, 8, 8, 10, 4, true);
+  MobiDOT.update();
+
+  delay(5000);
+
+  // Multiple
+  MobiDOT.drawBitmap(bitmap, 8, 8, 0, 0, false);
+  MobiDOT.drawBitmap(bitmap, 8, 8, 10, 4, true);
+  MobiDOT.update();
 }
 
 void loop()
