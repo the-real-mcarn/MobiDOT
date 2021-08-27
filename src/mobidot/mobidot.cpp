@@ -87,6 +87,23 @@ void MobiDOT::print(const char c[], MobiDOT::Font font, uint offsetX, uint offse
     }
 }
 
+void MobiDOT::print(const char c[], const GFXfont *font, uint offsetX, uint offsetY)
+{
+    for (size_t i = 0; i < strlen(c); i++)
+    {
+        Serial.print(c[i]);
+        Serial.print(" -> 0x");
+        Serial.print(c[i], HEX);
+        Serial.print(" -> ");
+        Serial.print("Index: ");
+        Serial.print((uint8_t)(c[i] - 0x20));
+        Serial.print(" -> ");
+
+        GFXglyph *g = font->glyph+(c[i] - 0x20);
+        Serial.println(pgm_read_word(&g->bitmapOffset));
+    }
+};
+
 bool MobiDOT::update()
 {
     uint *size = &this->BUFFER_SIZE;

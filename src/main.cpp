@@ -1,9 +1,9 @@
 #include <Arduino.h>
 #include <WiFiClient.h>
 #include <ESP8266WiFiMulti.h>
-#include <SoftwareSerial.h>
 
 #include "mobidot/mobidot.hpp"
+#include "Fonts/FreeMono12pt7b.h"
 
 MobiDOT MobiDOT(/* rx */ 5, /* tx */ 0, /* ctrl */ 4, /* light */ 3);
 
@@ -47,20 +47,10 @@ void setup()
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
 
+  // Display setup
   MobiDOT.selectDisplay(MobiDOT::Display::REAR);
 
-  // MobiDOT.print("mobitec", MobiDOT::Font::TEXT_16PX, 18, 19);
-  // MobiDOT.print("TM", MobiDOT::Font::TEXT_5PX, 80, 0);
-
-  MobiDOT.print("T", MobiDOT::Font::TEXT_13PX_BOLD);
-  MobiDOT.update();
-
-  delay(5000);
-
-  MobiDOT.clear(true);
-  MobiDOT.update();
-
-  delay(5000);
+  MobiDOT.print("Test", &FreeMono12pt7b, 0, 0);
 
   const char bitmap[] = {
       0xff,
@@ -77,23 +67,9 @@ void setup()
   MobiDOT.drawBitmap(bitmap, 8, 8, 0, 0, false);
   MobiDOT.update();
 
-  delay(5000);
+  delay(3000);
 
-  // Inverted
-  MobiDOT.drawBitmap(bitmap, 8, 8, 0, 0, true);
-  MobiDOT.update();
-
-  delay(5000);
-
-  // Other location
-  MobiDOT.drawBitmap(bitmap, 8, 8, 10, 4, true);
-  MobiDOT.update();
-
-  delay(5000);
-
-  // Multiple
-  MobiDOT.drawBitmap(bitmap, 8, 8, 0, 0, false);
-  MobiDOT.drawBitmap(bitmap, 8, 8, 10, 4, true);
+  MobiDOT.clear();
   MobiDOT.update();
 }
 
@@ -107,7 +83,7 @@ void loop()
       Serial.print("Printing: ");
       angle_str[idx - 1] = 0;
       Serial.println(angle_str);
-      MobiDOT.print(angle_str, MobiDOT::Font::TEXT_13PX_BOLD, 0, 0);
+      MobiDOT.print(angle_str, MobiDOT::Font::TEXT_6PX, 0, 0);
       MobiDOT.update();
       idx = -1;
     }

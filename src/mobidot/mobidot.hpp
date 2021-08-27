@@ -9,6 +9,7 @@
 
 #include <Arduino.h>
 #include <SoftwareSerial.h>
+#include "gfxfont/gfxfont.h"
 
 /* Library constants */
 #define MOBIDOT_DEBUG true
@@ -108,7 +109,8 @@ public:
     /**
      * print function
      * Prints a string to the display using the currently selected font, 
-     * keep in mind that some fonts require a certain offset in order to start on the first pixel of the display
+     * keep in mind that some fonts require a certain offset in order to start on the first pixel of the display.
+     * This function can only use fonts built into the MobiDOT units
      * @param c[] String to print
      * @param font Font to use
      * @param offsetX Horizontal offset
@@ -118,6 +120,8 @@ public:
     void print(const char c[], uint offsetX, uint offsetY);
     void print(const char c[], MobiDOT::Font font);
     void print(const char c[], MobiDOT::Font font, uint offsetX, uint offsetY);
+
+    void print(const char c[], const GFXfont *font, uint offsetX, uint offsetY);
 
     /**
      * update function
