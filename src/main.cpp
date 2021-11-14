@@ -50,7 +50,7 @@ void setup()
   // Display setup
   MobiDOT.selectDisplay(MobiDOT::Display::REAR);
 
-  MobiDOT.print("B", &FreeMono9pt7b, 17, 0);
+  MobiDOT.print("Bf", &FreeMono9pt7b, 17, 0);
 
   // const unsigned char xs[] = {
   //     0x92, 0x40, 0xc7, 0x00, 0x92, 0x40, 0x38, 0xc0, 0x92, 0x40, 0xc7, 0x00, 0x92, 0x40, 0x38, 0xc0,

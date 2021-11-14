@@ -89,6 +89,8 @@ void MobiDOT::print(const char c[], MobiDOT::Font font, uint offsetX, uint offse
 
 void MobiDOT::print(const char c[], const GFXfont *font, uint offsetX, uint offsetY, bool invert)
 {
+    // This function creates a bitmap that the sendBitmap function will handle, no need to add a buffer at this point
+
     // First char in the font
     const uint8_t first = pgm_read_word(&font->first);
 
@@ -123,7 +125,7 @@ void MobiDOT::print(const char c[], const GFXfont *font, uint offsetX, uint offs
         const uint16_t charSize = charW * charH;
         const uint8_t charByteSize = ceil(charSize / 8.0);
 
-        Serial.printf("\nChar index: 0x%x\nBitmap offset %d;\nChar width %d; Char height %d; \nChar size %d; in bytes %d;\n", index, bitmapOffset, charW, charH, charSize, charByteSize);
+        Serial.printf("\nChar index: 0x%x\nBitmap offset: %d;\nChar width: %d; Char height: %d; \nChar size: %d; in bytes: %d;\n", index, bitmapOffset, charW, charH, charSize, charByteSize);
 
         // Create array pointer to store char data in
         uint8_t *charData = new uint8_t[charByteSize];
@@ -134,19 +136,74 @@ void MobiDOT::print(const char c[], const GFXfont *font, uint offsetX, uint offs
             // Get value from progmem
             const uint8_t value = pgm_read_word(&font->bitmap[bitmapOffset + byte]);
 
-            // Store data in bitmap array
+            // Store data in array
             charData[byte] = value;
-            Serial.printf("%X, ", HEX);
+            Serial.printf("%X, ", value);
         }
         Serial.println(" ");
 
         // Now that we have the char data, it is time to make it into a bitmap, which means padding it to full bytes
         // Determine width
-        const uint8_t bitmapByteW = ceil(charW / 8.0);
-        Serial.printf("\nBitmap width: %d; Buffer size: %d;\n", bitmapByteW, bitmapByteW * charH);
+        // TODO: Might have to change this to the xAdvance instead because some letters be skinny af
+        const uint8_t bufferByteW = ceil(charW / 8.0);
+        Serial.printf("\nBitmap width: %d; Buffer size: %d;\n", bufferByteW, bufferByteW * charH);
 
-        // Create buffer
-        uint8_t *bitmap = new uint8_t[bitmapByteW * charH];
+        // Create buffer and zero it
+        uint8_t *buffer = new uint8_t[bufferByteW * charH];
+        memset(buffer, 0, bufferByteW * charH);
+
+        // Go through char bit by bit
+        // TODO: Find a way to optimise this?
+        for (uint8_t b = 0; b < charSize; b++)
+        {
+            // Get the value of the current bit, if it is zero we can skip it
+            uint8_t charByteOffset = floor(b / 8.0); // Start with zero
+            uint8_t charBitOffset = b % 8;
+            const uint8_t value = charData[charByteOffset] >> (7 - charBitOffset) & 0b00000001;
+
+            // Print char data visually
+            Serial.printf("%d ", value);
+            if ((b + 1) % charW == 0)
+            {
+                Serial.println(" ");
+            }
+
+            if (value)
+            {
+                // First determine which byte this bit falls in
+                const uint8_t line = floor(b / charW); // Start with zero
+                uint8_t bufferByteOffset = line * bufferByteW;
+
+                // Get the bit offset in the current line
+                uint8_t bufferBitOffset = b - (line * charW);
+
+                // Bytes are 8 bits, if the bit offset is larger than 8 it should be added to the byte offset
+                while (bufferBitOffset >= 8)
+                {
+                    bufferBitOffset = bufferBitOffset - 8;
+                    bufferByteOffset++;
+                }
+
+                // Copy value to the bitmap buffer
+                uint8_t result = 0x01;
+                result = result << (7 - bufferBitOffset);
+                buffer[bufferByteOffset] = buffer[bufferByteOffset] | result;
+            }
+        }
+
+        // Print bitmap buffer visually
+        for (size_t test = 0; test < (bufferByteW * 8) * charH; test++)
+        {
+            uint8_t byteO = floor(test / 8.0); // Start with zero
+            uint8_t bitO = test % 8;
+            const uint8_t value = buffer[byteO] >> (7 - bitO) & 0b00000001;
+
+            Serial.printf("%d ", value);
+            if ((test + 1) % (bufferByteW * 8) == 0)
+            {
+                Serial.println(" ");
+            }
+        }
     }
 };
 
@@ -202,6 +259,7 @@ void MobiDOT::drawBitmap(const unsigned char data[], uint width, uint height, bo
 
 void MobiDOT::drawBitmap(const unsigned char data[], uint width, uint height, uint x, uint y, bool invert)
 {
+    // TODO: remove debug stuff
     // Check if the current buffer is empty, if so add the MobiDOT header
     if (this->BUFFER_DATA[0] != 0xff)
     {
@@ -226,6 +284,7 @@ void MobiDOT::drawBitmap(const unsigned char data[], uint width, uint height, ui
         this->BUFFER_DATA[*size + 5] = (char)MobiDOT::Font::BITWISE;
         *size += 6;
 
+        // debug
         Serial.print("width: ");
         Serial.println(width);
 
@@ -237,6 +296,7 @@ void MobiDOT::drawBitmap(const unsigned char data[], uint width, uint height, ui
 
         Serial.print("bit surplus: ");
         Serial.println((bytesOverWidth * 8) - width);
+        // end debug
 
         // Go through bitmap line by line (width)
         // for (int16_t j = (bytesOverWidth * 8 - 1); j >= (int)((bytesOverWidth * 8) - width); j--)
@@ -259,26 +319,29 @@ void MobiDOT::drawBitmap(const unsigned char data[], uint width, uint height, ui
                 if ((i * 5 + k) < (int)height)
                 {
                     // If it is in range, check the bitmap for the data
-                    // TODO: I am fairly certain that this code does not work with bitmaps larger than 8 pixels
-                    // const int8_t value = data[((i * 5) + k)] >> j & B00000001;
+                    // Bitmaps are padded on the right in order to fit each row into bytes, keep this in mind
 
-                    // Bitmaps are padded on the right in order to fit each row into bytes
+                    // Determine the height we are at in the bitmap, i includes previous lines drawn, k is for the current line
                     int16_t byteOffset = ((i * 5) * bytesOverWidth) + (k * bytesOverWidth);
 
-                    // problem is here
+                    // Now that we have the height sorted, we have to account for the current position in width j
                     int16_t bitOffset = j;
 
-                    // Now that we have the height sorted, we have to account for the current position in width j
+                    // Bytes are 8 bits, if the bit offset is larger than 8 it should be added to the byte offset
                     while (bitOffset >= 8)
                     {
                         bitOffset = bitOffset - 8;
                         byteOffset++;
                     }
 
+                    // Because we are going to shift these bits in, we need to reverse the order
+                    // TODO: One line this once you know it works with fonts
                     bitOffset = 7 - bitOffset;
 
+                    // Get value of current bit
                     const int8_t value = data[byteOffset] >> bitOffset & B00000001;
 
+                    // debug
                     Serial.print(" byte: ");
                     Serial.print(byteOffset);
                     Serial.print("; value:\t");
@@ -287,6 +350,7 @@ void MobiDOT::drawBitmap(const unsigned char data[], uint width, uint height, ui
                     Serial.print(bitOffset);
                     Serial.print("; value: ");
                     Serial.println(value);
+                    // end debug
 
                     // Invert the data if requested
                     if (invert == value)
@@ -295,12 +359,16 @@ void MobiDOT::drawBitmap(const unsigned char data[], uint width, uint height, ui
                     }
                 }
             }
-            // Result
+
+            // Add result to command buffer
             this->BUFFER_DATA[*size] = result;
+            *size += 1;
+
+            // debug
             Serial.print("result: ");
             Serial.println(result, BIN);
             Serial.println("");
-            *size += 1;
+            // end debug
         }
     }
 }
@@ -310,7 +378,6 @@ void MobiDOT::drawBitmap(const unsigned char data[], uint width, uint height, ui
  */
 void MobiDOT::addHeader(MobiDOT::Display type, char data[], uint &size)
 {
-    // Serial.println(size);
     data[size] = (char)MOBIDOT_BYTE_START;                    // Start serial transfer
     data[size + 1] = (char)this->display[(uint)type].address; // Set address
     data[size + 2] = (char)MOBIDOT_MODE_ASCII;                // Set ASCII mode
@@ -331,6 +398,7 @@ void MobiDOT::addFooter(char data[], uint &size)
     }
     data[size] = checksum & 0xff; // Cut down checksum to one byte
 
+    // Change the checksum if it has a certain value, this probably required to prevent a conflict somewhere
     if (data[size] == 0xfe)
     {
         data[size + 1] = 0x00;
