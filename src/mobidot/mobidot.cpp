@@ -121,6 +121,7 @@ void MobiDOT::print(const char c[], const GFXfont *font, uint offsetX, uint offs
 
         const uint8_t charW = pgm_read_word(&g->width);
         const uint8_t charH = pgm_read_word(&g->height);
+        const uint8_t charXadvance = pgm_read_word(&g->xAdvance);
 
         const uint16_t charSize = charW * charH;
         const uint8_t charByteSize = ceil(charSize / 8.0);
@@ -204,6 +205,9 @@ void MobiDOT::print(const char c[], const GFXfont *font, uint offsetX, uint offs
                 Serial.println(" ");
             }
         }
+
+        MobiDOT::drawBitmap(buffer, charW, charH, offsetX + cursor, offsetY, !invert);
+        cursor = cursor + charXadvance;
     }
 };
 

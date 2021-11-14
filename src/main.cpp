@@ -3,7 +3,7 @@
 #include <ESP8266WiFiMulti.h>
 
 #include "mobidot/mobidot.hpp"
-#include "Fonts/FreeMono9pt7b.h"
+#include "Fonts/FreeSerifItalic9pt7b.h"
 
 MobiDOT MobiDOT(/* rx */ 5, /* tx */ 0, /* ctrl */ 4, /* light */ 3);
 
@@ -50,7 +50,8 @@ void setup()
   // Display setup
   MobiDOT.selectDisplay(MobiDOT::Display::REAR);
 
-  MobiDOT.print("Bf", &FreeMono9pt7b, 17, 0);
+  // MobiDOT.print("Btr", MobiDOT::Font::TEXT_5PX, 17, 0);
+  MobiDOT.print("Yea", &FreeSerifItalic9pt7b, 0, 0);
 
   // const unsigned char xs[] = {
   //     0x92, 0x40, 0xc7, 0x00, 0x92, 0x40, 0x38, 0xc0, 0x92, 0x40, 0xc7, 0x00, 0x92, 0x40, 0x38, 0xc0,
