@@ -12,7 +12,7 @@
 #include "gfxfont/gfxfont.h"
 
 /* Library constants */
-#define MOBIDOT_DEBUG true
+#define DEBUG true
 
 /* RS485 constants */
 #define RS485_TX_PIN_VALUE HIGH
@@ -115,13 +115,13 @@ public:
      * @param font Font to use
      * @param offsetX Horizontal offset
      * @param offsetY Vertical offset
+     * @param invert Invert text, only works with GFXfonts
      */
     void print(const char c[]);
     void print(const char c[], uint offsetX, uint offsetY);
     void print(const char c[], MobiDOT::Font font);
     void print(const char c[], MobiDOT::Font font, uint offsetX, uint offsetY);
-
-    void print(const char c[], const GFXfont *font, uint offsetX, uint offsetY);
+    void print(const char c[], const GFXfont *font, uint offsetX, uint offsetY, bool invert = false);
 
     /**
      * update function
@@ -148,8 +148,8 @@ public:
      * @param y Vertical offset
      * @param invert Inverts image data if true
      */
-    void drawBitmap(const char data[], uint width, uint height, bool invert = false);
-    void drawBitmap(const char data[], uint width, uint height, uint x, uint y, bool invert = false);
+    void drawBitmap(const unsigned char data[], uint width, uint height, bool invert = false);
+    void drawBitmap(const unsigned char data[], uint width, uint height, uint x, uint y, bool invert = false);
 
 private:
     SoftwareSerial RS485;

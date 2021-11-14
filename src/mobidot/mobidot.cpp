@@ -87,20 +87,66 @@ void MobiDOT::print(const char c[], MobiDOT::Font font, uint offsetX, uint offse
     }
 }
 
-void MobiDOT::print(const char c[], const GFXfont *font, uint offsetX, uint offsetY)
+void MobiDOT::print(const char c[], const GFXfont *font, uint offsetX, uint offsetY, bool invert)
 {
+    // First char in the font
+    const uint8_t first = pgm_read_word(&font->first);
+
+    // Char ascii index
+    uint8_t index;
+
+    // Cursor for x position
+    uint16_t cursor = 0;
+
+    // Go through string char by char
     for (size_t i = 0; i < strlen(c); i++)
     {
-        Serial.print(c[i]);
-        Serial.print(" -> 0x");
-        Serial.print(c[i], HEX);
-        Serial.print(" -> ");
-        Serial.print("Index: ");
-        Serial.print((uint8_t)(c[i] - 0x20));
-        Serial.print(" -> ");
+        // Make sure that the selected char is in the scope of the font, otherwise display a space
+        if (c[i] >= first && c[i] <= pgm_read_word(&font->last))
+        {
+            index = c[i] - first;
+        }
+        else
+        {
+            index = 0x20 - first;
+        }
 
-        GFXglyph *g = font->glyph+(c[i] - 0x20);
-        Serial.println(pgm_read_word(&g->bitmapOffset));
+        // Create glyph instance
+        GFXglyph *g = font->glyph + index;
+
+        // Read information from glyph instance
+        uint16_t bitmapOffset = (uint16_t)pgm_read_word(&g->bitmapOffset);
+
+        const uint8_t charW = pgm_read_word(&g->width);
+        const uint8_t charH = pgm_read_word(&g->height);
+
+        const uint16_t charSize = charW * charH;
+        const uint8_t charByteSize = ceil(charSize / 8.0);
+
+        Serial.printf("\nChar index: 0x%x\nBitmap offset %d;\nChar width %d; Char height %d; \nChar size %d; in bytes %d;\n", index, bitmapOffset, charW, charH, charSize, charByteSize);
+
+        // Create array pointer to store char data in
+        uint8_t *charData = new uint8_t[charByteSize];
+
+        // Read char data byte by byte from the font bitmap
+        for (uint8_t byte = 0; byte <= charByteSize - 1; byte++)
+        {
+            // Get value from progmem
+            const uint8_t value = pgm_read_word(&font->bitmap[bitmapOffset + byte]);
+
+            // Store data in bitmap array
+            charData[byte] = value;
+            Serial.printf("%X, ", HEX);
+        }
+        Serial.println(" ");
+
+        // Now that we have the char data, it is time to make it into a bitmap, which means padding it to full bytes
+        // Determine width
+        const uint8_t bitmapByteW = ceil(charW / 8.0);
+        Serial.printf("\nBitmap width: %d; Buffer size: %d;\n", bitmapByteW, bitmapByteW * charH);
+
+        // Create buffer
+        uint8_t *bitmap = new uint8_t[bitmapByteW * charH];
     }
 };
 
@@ -149,12 +195,12 @@ void MobiDOT::clear(bool value)
     }
 }
 
-void MobiDOT::drawBitmap(const char data[], uint width, uint height, bool invert)
+void MobiDOT::drawBitmap(const unsigned char data[], uint width, uint height, bool invert)
 {
     this->drawBitmap(data, width, height, 0, 0, invert);
 }
 
-void MobiDOT::drawBitmap(const char data[], uint width, uint height, uint x, uint y, bool invert)
+void MobiDOT::drawBitmap(const unsigned char data[], uint width, uint height, uint x, uint y, bool invert)
 {
     // Check if the current buffer is empty, if so add the MobiDOT header
     if (this->BUFFER_DATA[0] != 0xff)
@@ -163,9 +209,15 @@ void MobiDOT::drawBitmap(const char data[], uint width, uint height, uint x, uin
     }
 
     uint *size = &this->BUFFER_SIZE;
+    const uint16_t bytesOverWidth = ceil(width / 8.0);
 
-    for (size_t i = 0; i < ceil((float)height / 5); i++)
+    // Divide bitmap in rows of 5 pixels because that is how the font works
+    for (int16_t i = 0; i < ceil((float)height / 5); i++)
     {
+        Serial.print("\ni: ");
+        Serial.println(i);
+
+        // Add bitmap header
         this->BUFFER_DATA[*size] = 0xd2;
         this->BUFFER_DATA[*size + 1] = x;
         this->BUFFER_DATA[*size + 2] = 0xd3;
@@ -174,15 +226,69 @@ void MobiDOT::drawBitmap(const char data[], uint width, uint height, uint x, uin
         this->BUFFER_DATA[*size + 5] = (char)MobiDOT::Font::BITWISE;
         *size += 6;
 
-        for (size_t j = 0; j < width; j++)
+        Serial.print("width: ");
+        Serial.println(width);
+
+        Serial.print("bytes: ");
+        Serial.println(bytesOverWidth);
+
+        Serial.print("bit total: ");
+        Serial.println((bytesOverWidth * 8));
+
+        Serial.print("bit surplus: ");
+        Serial.println((bytesOverWidth * 8) - width);
+
+        // Go through bitmap line by line (width)
+        // for (int16_t j = (bytesOverWidth * 8 - 1); j >= (int)((bytesOverWidth * 8) - width); j--)
+        for (int16_t j = 0; j <= (int)width - 1; j++)
         {
+            Serial.print("\nj: ");
+            Serial.println(j);
+
+            // Result byte needs to start with 001xxxxx
             char result = 0x01;
-            for (int8_t k = 4; k >= 0; k--)
+
+            // Go through bitmap data bit by bit backwards because font
+            for (int8_t k = 4; k >= 0; k--) // Height
             {
+                // Shift byte left
                 result = result << 1;
-                if ((i * 5 + k) < height)
+
+                // Check if the current font line is not out of range of the bitmap, if it is, it's value should be 0
+                // e.g. if the bitmap is 12px in height thus not divideable by 5
+                if ((i * 5 + k) < (int)height)
                 {
-                    const int8_t value = data[((i * 5) + k)] >> j & B00000001;
+                    // If it is in range, check the bitmap for the data
+                    // TODO: I am fairly certain that this code does not work with bitmaps larger than 8 pixels
+                    // const int8_t value = data[((i * 5) + k)] >> j & B00000001;
+
+                    // Bitmaps are padded on the right in order to fit each row into bytes
+                    int16_t byteOffset = ((i * 5) * bytesOverWidth) + (k * bytesOverWidth);
+
+                    // problem is here
+                    int16_t bitOffset = j;
+
+                    // Now that we have the height sorted, we have to account for the current position in width j
+                    while (bitOffset >= 8)
+                    {
+                        bitOffset = bitOffset - 8;
+                        byteOffset++;
+                    }
+
+                    bitOffset = 7 - bitOffset;
+
+                    const int8_t value = data[byteOffset] >> bitOffset & B00000001;
+
+                    Serial.print(" byte: ");
+                    Serial.print(byteOffset);
+                    Serial.print("; value:\t");
+                    Serial.print(data[byteOffset], BIN);
+                    Serial.print("\tbit: ");
+                    Serial.print(bitOffset);
+                    Serial.print("; value: ");
+                    Serial.println(value);
+
+                    // Invert the data if requested
                     if (invert == value)
                     {
                         result = result | B00000001;
@@ -191,6 +297,9 @@ void MobiDOT::drawBitmap(const char data[], uint width, uint height, uint x, uin
             }
             // Result
             this->BUFFER_DATA[*size] = result;
+            Serial.print("result: ");
+            Serial.println(result, BIN);
+            Serial.println("");
             *size += 1;
         }
     }
