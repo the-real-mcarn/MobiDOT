@@ -30,22 +30,22 @@ void setup()
   Serial.print("\n\nMobitec version: ");
   Serial.println(compile_date);
 
-  // // Wifi setup
-  // WiFi.mode(WIFI_STA);
-  // WiFi.persistent(true);
-  // WiFiMulti.addAP("Langeboomgaard", "ACvI4152EK");
+  // Wifi setup
+  WiFi.mode(WIFI_STA);
+  WiFi.persistent(true);
+  WiFiMulti.addAP("Langeboomgaard", "ACvI4152EK");
 
-  // Serial.print("\nWifi connecting");
-  // while (WiFiMulti.run() != WL_CONNECTED)
-  // {
-  //   Serial.print(".");
-  //   delay(500);
-  // }
+  Serial.print("\nWifi connecting");
+  while (WiFiMulti.run() != WL_CONNECTED)
+  {
+    Serial.print(".");
+    delay(500);
+  }
 
-  // Serial.println("");
-  // Serial.println("WiFi connected");
-  // Serial.println("IP address: ");
-  // Serial.println(WiFi.localIP());
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
 
   // Display setup
   MobiDOT.selectDisplay(MobiDOT::Display::REAR);
@@ -72,27 +72,9 @@ void setup()
   // MobiDOT.drawBitmap(smile, 8, 8, 12, 6, true);
   // MobiDOT.drawBitmap(xs, 10, 10, 0, 2);
   MobiDOT.update();
-
-  // delay(3000);
-
-  // MobiDOT.clear();
-  // MobiDOT.update();
 }
 
 void loop()
 {
-  // if (Serial.available() > 0)
-  // {
-  //   angle_str[idx] = Serial.read();
-  //   if (angle_str[idx] == LF)
-  //   {
-  //     Serial.print("Printing: ");
-  //     angle_str[idx - 1] = 0;
-  //     Serial.println(angle_str);
-  //     MobiDOT.print(angle_str, MobiDOT::Font::TEXT_6PX, 0, 0);
-  //     MobiDOT.update();
-  //     idx = -1;
-  //   }
-  //   idx++;
-  // }
+
 }

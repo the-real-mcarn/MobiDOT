@@ -112,9 +112,9 @@ public:
      * keep in mind that some fonts require a certain offset in order to start on the first pixel of the display.
      * This function can only use fonts built into the MobiDOT units
      * @param c[] String to print
-     * @param font Font to use
-     * @param offsetX Horizontal offset
-     * @param offsetY Vertical offset
+     * @param font Font to use (optional, will use default font when not specified)
+     * @param offsetX Horizontal offset (optional, will print at 0, 0 when not specified)
+     * @param offsetY Vertical offset (see offsetX)
      * @param invert Invert text, only works with GFXfonts
      */
     void print(const char c[]);
@@ -134,7 +134,6 @@ public:
      * clear function
      * Clears the currently selected display
      * @param value Determines wether all dots will be turned 'on' (yellow side) or 'off' (black side)
-     * @returns True or false based on wether the transfer was successfull
      */
     void clear(bool value = false);
 
@@ -144,22 +143,31 @@ public:
      * @param data Bitmap data
      * @param width Width of the to be printed image
      * @param height Height of the to be printed image
-     * @param x Horizontal offset
-     * @param y Vertical offset
-     * @param invert Inverts image data if true
+     * @param x Horizontal offset (optional, will display at 0, 0 if not specified)
+     * @param y Vertical offset (see x)
+     * @param invert Inverts image data if true (optional, false if not specified)
      */
     void drawBitmap(const unsigned char data[], uint width, uint height, bool invert = false);
     void drawBitmap(const unsigned char data[], uint width, uint height, uint x, uint y, bool invert = false);
 
 private:
+    // Serial communication parameters
     SoftwareSerial RS485;
     uint8_t PIN_CTRL;
-    int8_t PIN_LIGHT = -1;
 
+    // Current display storage
     MobiDOT::Display DISPLAY_DEFAULT;
+
+    // Command buffer, MobiDOT displays allow for commands to be stringed together.
+    // In fact, this is required if you want to draw more than one thing on the display, like a bitmap and text
+    // The buffer will be sent and cleared when update() is called.
+    // If the size is too small for your project you can change the buffer size using the compiler macro
     char BUFFER_DATA[RS485_BUFFER_SIZE] = {0};
     uint BUFFER_SIZE = 0;
 
+    // State of the relay that controls the frontlight
+    // TODO: Make frontlight work
+    int8_t PIN_LIGHT = -1;
     bool STATE_LIGHT = false;
 
     /**

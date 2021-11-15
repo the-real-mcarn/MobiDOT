@@ -12,6 +12,7 @@
 /**
  * MobiDOT class constructors
  */
+
 MobiDOT::MobiDOT(const uint8_t rx, const uint8_t tx, const uint8_t ctrl, const uint8_t light)
 {
     // Start software serial
@@ -40,6 +41,7 @@ MobiDOT::~MobiDOT()
 /**
  * Public functions
  */
+
 void MobiDOT::selectDisplay(MobiDOT::Display type)
 {
     this->DISPLAY_DEFAULT = type;
@@ -380,6 +382,7 @@ void MobiDOT::drawBitmap(const unsigned char data[], uint width, uint height, ui
 /**
  * Private functions
  */
+
 void MobiDOT::addHeader(MobiDOT::Display type, char data[], uint &size)
 {
     data[size] = (char)MOBIDOT_BYTE_START;                    // Start serial transfer
