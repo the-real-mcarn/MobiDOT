@@ -3,7 +3,8 @@
 #include <ESP8266WiFiMulti.h>
 
 #include "mobidot/mobidot.hpp"
-#include "Fonts/FreeSerifItalic9pt7b.h"
+#include "Fonts/prstartk4pt7b.h"
+#include "Fonts/SilomBol8pt7b.h"
 
 MobiDOT MobiDOT(/* rx */ 5, /* tx */ 0, /* ctrl */ 4, /* light */ 3);
 
@@ -50,13 +51,22 @@ void setup()
   // Display setup
   MobiDOT.selectDisplay(MobiDOT::Display::REAR);
 
-  // MobiDOT.print("Btr", MobiDOT::Font::TEXT_5PX, 17, 0);
-  MobiDOT.print("Yea", &FreeSerifItalic9pt7b, 0, 0);
+  MobiDOT.print("Hy", &SilomBol8pt7b, 3, 2, false);
+  MobiDOT.update();
 
-  // const unsigned char xs[] = {
-  //     0x92, 0x40, 0xc7, 0x00, 0x92, 0x40, 0x38, 0xc0, 0x92, 0x40, 0xc7, 0x00, 0x92, 0x40, 0x38, 0xc0,
-  //     0x92, 0x40, 0xc7, 0x00
-  // };
+  delay(5000);
+
+  MobiDOT.print("Hy", &SilomBol8pt7b, 3, 2, true);
+  MobiDOT.update();
+
+  delay(5000);
+
+  const unsigned char xs[] = {
+      0x92, 0x40, 0xc7, 0x00, 0x92, 0x40, 0x38, 0xc0, 0x92, 0x40, 0xc7, 0x00, 0x92, 0x40, 0x38, 0xc0,
+      0x92, 0x40, 0xc7, 0x00};
+
+  MobiDOT.drawBitmap(xs, 10, 10, 0, 2);
+  MobiDOT.update();
 
   // const unsigned char smile[] = {
   //     0xff,
@@ -68,13 +78,8 @@ void setup()
   //     0xc3,
   //     0xff,
   // };
-
-  // MobiDOT.drawBitmap(smile, 8, 8, 12, 6, true);
-  // MobiDOT.drawBitmap(xs, 10, 10, 0, 2);
-  MobiDOT.update();
 }
 
 void loop()
 {
-
 }

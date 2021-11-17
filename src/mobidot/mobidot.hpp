@@ -118,10 +118,10 @@ public:
      * @param invert Invert text, only works with GFXfonts
      */
     void print(const char c[]);
-    void print(const char c[], uint offsetX, uint offsetY);
+    void print(const char c[], int offsetX, int offsetY);
     void print(const char c[], MobiDOT::Font font);
-    void print(const char c[], MobiDOT::Font font, uint offsetX, uint offsetY);
-    void print(const char c[], const GFXfont *font, uint offsetX, uint offsetY, bool invert = false);
+    void print(const char c[], MobiDOT::Font font, int offsetX, int offsetY);
+    void print(const char c[], const GFXfont *font, int offsetX, int offsetY, bool invert = false);
 
     /**
      * update function
@@ -148,7 +148,7 @@ public:
      * @param invert Inverts image data if true (optional, false if not specified)
      */
     void drawBitmap(const unsigned char data[], uint width, uint height, bool invert = false);
-    void drawBitmap(const unsigned char data[], uint width, uint height, uint x, uint y, bool invert = false);
+    void drawBitmap(const unsigned char data[], uint width, uint height, int x, int y, bool invert = false);
 
 private:
     // Serial communication parameters
