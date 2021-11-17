@@ -4,6 +4,7 @@
 
 #include "mobidot/mobidot.hpp"
 #include "Fonts/prstartk4pt7b.h"
+#include "Fonts/Picopixel.h"
 #include "Fonts/SilomBol8pt7b.h"
 
 MobiDOT MobiDOT(/* rx */ 5, /* tx */ 0, /* ctrl */ 4, /* light */ 3);
@@ -51,22 +52,18 @@ void setup()
   // Display setup
   MobiDOT.selectDisplay(MobiDOT::Display::REAR);
 
-  MobiDOT.print("Hy", &SilomBol8pt7b, 3, 2, false);
+  MobiDOT.print("Hi", &prstartk4pt7b, 2, 1, true);
+  MobiDOT.print("there!", &Picopixel, 1, 9, false);
   MobiDOT.update();
 
   delay(5000);
 
-  MobiDOT.print("Hy", &SilomBol8pt7b, 3, 2, true);
-  MobiDOT.update();
+  // const unsigned char xs[] = {
+  //     0x92, 0x40, 0xc7, 0x00, 0x92, 0x40, 0x38, 0xc0, 0x92, 0x40, 0xc7, 0x00, 0x92, 0x40, 0x38, 0xc0,
+  //     0x92, 0x40, 0xc7, 0x00};
 
-  delay(5000);
-
-  const unsigned char xs[] = {
-      0x92, 0x40, 0xc7, 0x00, 0x92, 0x40, 0x38, 0xc0, 0x92, 0x40, 0xc7, 0x00, 0x92, 0x40, 0x38, 0xc0,
-      0x92, 0x40, 0xc7, 0x00};
-
-  MobiDOT.drawBitmap(xs, 10, 10, 0, 2);
-  MobiDOT.update();
+  // MobiDOT.drawBitmap(xs, 10, 10, 0, 2);
+  // MobiDOT.update();
 
   // const unsigned char smile[] = {
   //     0xff,

@@ -121,6 +121,8 @@ public:
     void print(const char c[], int offsetX, int offsetY);
     void print(const char c[], MobiDOT::Font font);
     void print(const char c[], MobiDOT::Font font, int offsetX, int offsetY);
+
+    void print(const char c[], const GFXfont *font, bool invert = false);
     void print(const char c[], const GFXfont *font, int offsetX, int offsetY, bool invert = false);
 
     /**
@@ -149,6 +151,8 @@ public:
      */
     void drawBitmap(const unsigned char data[], uint width, uint height, bool invert = false);
     void drawBitmap(const unsigned char data[], uint width, uint height, int x, int y, bool invert = false);
+
+    // TODO: Add drawRect function
 
 private:
     // Serial communication parameters

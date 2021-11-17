@@ -24,7 +24,7 @@ MobiDOT::MobiDOT(const uint8_t rx, const uint8_t tx, const uint8_t ctrl, const u
     pinMode(this->PIN_CTRL, OUTPUT);
     digitalWrite(this->PIN_CTRL, RS485_RX_PIN_VALUE);
 
-    // Init light relais pin
+    // Init light relay pin
     if (light != -1)
     {
         this->PIN_LIGHT = light;
@@ -87,6 +87,11 @@ void MobiDOT::print(const char c[], MobiDOT::Font font, int offsetX, int offsetY
         this->BUFFER_DATA[*size] = c[i];
         *size += 1;
     }
+}
+
+void MobiDOT::print(const char c[], const GFXfont *font, bool invert)
+{
+    this->print(c, font, 0, 0, invert);
 }
 
 void MobiDOT::print(const char c[], const GFXfont *font, int offsetX, int offsetY, bool invert)
@@ -169,7 +174,7 @@ void MobiDOT::print(const char c[], const GFXfont *font, int offsetX, int offset
 
         // Now that we have the char data, it is time to make it into a bitmap, which means padding it to full bytes
         // Determine width
-        const uint8_t bufferByteW = ceil(charXadvance / 8.0);
+        const uint8_t bufferByteW = ceil((charXadvance + charXoffset) / 8.0);
 
         // Create buffer and zero it
         uint8_t *buffer = new uint8_t[bufferByteW * bufferHeight];
@@ -193,7 +198,7 @@ void MobiDOT::print(const char c[], const GFXfont *font, int offsetX, int offset
                 const int8_t letterLineOffset = (bufferHeight + charYoffset - (charH + charYoffset)) * bufferByteW;
 
                 // Get the bit offset in the current line
-                uint8_t bufferBitOffset = b - (line * charW);
+                uint8_t bufferBitOffset = b - (line * charW) + charXoffset;
 
                 // Shift everything one bit if inverting text to make sure that text does not dissapear into the background
                 if (invert)
@@ -215,17 +220,14 @@ void MobiDOT::print(const char c[], const GFXfont *font, int offsetX, int offset
             }
         }
 
-        // Skip the X offset of the char if it is the first, otherwise the font will not print at the exact coordinates given
-        const int16_t printX = (i > 0) ? (offsetX + cursor + charXoffset) : (offsetX + cursor);
-
         // Draw the char
         MobiDOT::drawBitmap(
-            buffer,       // Bitmap buffer
-            charXadvance, // Width including whitespace after char and before char if inverting
-            bufferHeight, // Height
-            printX,       // X offset
-            offsetY,      // Y offset
-            !invert       // Invert
+            buffer,                     // Bitmap buffer
+            charXadvance + charXoffset, // Width including whitespace after char and before char if inverting
+            bufferHeight,               // Height
+            offsetX + cursor,           // X offset
+            offsetY,                    // Y offset
+            !invert                     // Invert
         );
 
         // Update cursor for the next char
@@ -285,7 +287,6 @@ void MobiDOT::drawBitmap(const unsigned char data[], uint width, uint height, bo
 
 void MobiDOT::drawBitmap(const unsigned char data[], uint width, uint height, int x, int y, bool invert)
 {
-    // TODO: remove debug stuff
     // Check if the current buffer is empty, if so add the MobiDOT header
     if (this->BUFFER_DATA[0] != 0xff)
     {
@@ -311,9 +312,6 @@ void MobiDOT::drawBitmap(const unsigned char data[], uint width, uint height, in
         // for (int16_t j = (bytesOverWidth * 8 - 1); j >= (int)((bytesOverWidth * 8) - width); j--)
         for (int16_t j = 0; j <= (int)width - 1; j++)
         {
-            Serial.print("\nj: ");
-            Serial.println(j);
-
             // Result byte needs to start with 001xxxxx
             char result = 0x01;
 
@@ -358,12 +356,6 @@ void MobiDOT::drawBitmap(const unsigned char data[], uint width, uint height, in
             // Add result to command buffer
             this->BUFFER_DATA[*size] = result;
             *size += 1;
-
-            // debug
-            Serial.print("result: ");
-            Serial.println(result, BIN);
-            Serial.println("");
-            // end debug
         }
     }
 }
