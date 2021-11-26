@@ -52,7 +52,9 @@ void setup()
   // Display setup
   MobiDOT.selectDisplay(MobiDOT::Display::REAR);
 
-  MobiDOT.print("Hi", &prstartk4pt7b, 2, 1, true);
+  // MobiDOT.print("Hi", &prstartk4pt7b, 2, 1, true);
+  MobiDOT.drawRect(12, 8, 0, 0, false);
+  MobiDOT.drawRect(2, 2, 2, 2, true);
 
   // const unsigned char xs[] = {
   //     0x92, 0x40, 0xc7, 0x00, 0x92, 0x40, 0x38, 0xc0, 0x92, 0x40, 0xc7, 0x00, 0x92, 0x40, 0x38, 0xc0,

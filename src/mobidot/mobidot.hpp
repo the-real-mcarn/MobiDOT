@@ -152,7 +152,18 @@ public:
     void drawBitmap(const unsigned char data[], uint width, uint height, bool invert = false);
     void drawBitmap(const unsigned char data[], uint width, uint height, int x, int y, bool invert = false);
 
-    // TODO: Add drawRect function
+    /**
+     * drawRect function
+     * Draws a rectangle with the supplied width and height at the given coordinates
+     * If fill is true it will draw a rectange with all pixels on, otherwise just the outline
+     * @param width Width of the rectangle
+     * @param height Height of the rectangle
+     * @param x Horizontal offset (optional, will display at 0, 0 if not specified)
+     * @param y Vertical offset (see x)
+     * @param fill Fill or not
+     */
+    void drawRect(uint width, uint height, bool fill = true);
+    void drawRect(uint width, uint height, int x, int y, bool fill = true);
 
 private:
     // Serial communication parameters

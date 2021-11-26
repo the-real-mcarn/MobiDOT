@@ -222,7 +222,7 @@ void MobiDOT::print(const char c[], const GFXfont *font, int offsetX, int offset
                 }
 
                 // Copy value to the bitmap buffer
-                uint8_t result = 0x01;
+                char result = 0x01;
                 result = result << (7 - bufferBitOffset);
                 buffer[bufferByteOffset + letterLineOffset] = buffer[bufferByteOffset + letterLineOffset] | result;
             }
@@ -242,6 +242,69 @@ void MobiDOT::print(const char c[], const GFXfont *font, int offsetX, int offset
         cursor = cursor + charXadvance;
     }
 };
+
+void MobiDOT::drawRect(uint width, uint height, bool fill)
+{
+    MobiDOT::drawRect(width, height, 0, 0, fill);
+}
+
+void MobiDOT::drawRect(uint width, uint height, int x, int y, bool fill)
+{
+    // Determine width of the buffer
+    const uint8_t bufferW = ceil((width) / 8.0);
+
+    // Create buffer
+    uint8_t *buffer = new uint8_t[bufferW * height];
+
+    // Just the outline or fill the entire thing?
+    if (fill)
+    {
+        // Easy, just fill the buffer with 1's and send it to drawBitmap
+        memset(buffer, 0xff, bufferW * height);
+    }
+    else
+    {
+        // Slightly more complicated
+        memset(buffer, 0, bufferW * height);
+
+        // Horizontal lines
+        for (size_t i = 0; i < bufferW; i++)
+        {
+            buffer[i] = 0xff;
+            buffer[i + (height - 1) * bufferW] = 0xff;
+        }
+
+        // Vertical lines
+        uint8_t byteOffset = 0;
+        uint8_t bitOffset = width;
+
+        while (bitOffset > 8)
+        {
+            bitOffset = bitOffset - 8;
+            byteOffset++;
+        }
+
+        bitOffset = 8 - bitOffset;
+
+        for (size_t i = 0; i < height; i++)
+        {
+            buffer[i * bufferW] = buffer[i * bufferW] | 0x80;
+
+            char value = 0x01 << bitOffset;
+            buffer[i * bufferW + byteOffset] = buffer[i * bufferW + byteOffset] | value;
+        }
+    }
+
+    // Draw the rectangle
+    MobiDOT::drawBitmap(
+        buffer, // Bitmap buffer
+        width,  // Width including whitespace after char and before char if inverting
+        height, // Height
+        x,      // X offset
+        y,      // Y offset
+        true    // Invert
+    );
+}
 
 bool MobiDOT::update()
 {
