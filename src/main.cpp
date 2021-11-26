@@ -53,16 +53,16 @@ void setup()
   MobiDOT.selectDisplay(MobiDOT::Display::REAR);
 
   MobiDOT.print("Hi", &prstartk4pt7b, 2, 1, true);
-  MobiDOT.print("there!", &Picopixel, 1, 9, false);
-  MobiDOT.update();
-
-  delay(5000);
 
   // const unsigned char xs[] = {
   //     0x92, 0x40, 0xc7, 0x00, 0x92, 0x40, 0x38, 0xc0, 0x92, 0x40, 0xc7, 0x00, 0x92, 0x40, 0x38, 0xc0,
   //     0x92, 0x40, 0xc7, 0x00};
 
   // MobiDOT.drawBitmap(xs, 10, 10, 0, 2);
+
+  MobiDOT.print("there!", &Picopixel, 1, 9, false);
+  MobiDOT.update();
+
   // MobiDOT.update();
 
   // const unsigned char smile[] = {

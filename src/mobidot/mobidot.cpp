@@ -174,7 +174,15 @@ void MobiDOT::print(const char c[], const GFXfont *font, int offsetX, int offset
 
         // Now that we have the char data, it is time to make it into a bitmap, which means padding it to full bytes
         // Determine width
-        const uint8_t bufferByteW = ceil((charXadvance + charXoffset) / 8.0);
+        uint8_t bufferByteW;
+        if (invert && charXadvance % 8 == 0)
+        {
+            bufferByteW = ceil((charXadvance + 2) / 8.0);
+        }
+        else
+        {
+            bufferByteW = ceil((charXadvance) / 8.0);
+        }
 
         // Create buffer and zero it
         uint8_t *buffer = new uint8_t[bufferByteW * bufferHeight];
@@ -222,12 +230,12 @@ void MobiDOT::print(const char c[], const GFXfont *font, int offsetX, int offset
 
         // Draw the char
         MobiDOT::drawBitmap(
-            buffer,                     // Bitmap buffer
-            charXadvance + charXoffset, // Width including whitespace after char and before char if inverting
-            bufferHeight,               // Height
-            offsetX + cursor,           // X offset
-            offsetY,                    // Y offset
-            !invert                     // Invert
+            buffer,                                     // Bitmap buffer
+            (invert) ? charXadvance + 1 : charXadvance, // Width including whitespace after char and before char if inverting
+            bufferHeight,                               // Height
+            offsetX + cursor,                           // X offset
+            offsetY,                                    // Y offset
+            !invert                                     // Invert
         );
 
         // Update cursor for the next char
