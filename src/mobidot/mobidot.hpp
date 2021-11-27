@@ -107,6 +107,21 @@ public:
     void selectDisplay(MobiDOT::Display type);
 
     /**
+     * setLight function
+     * Sets the light pin set when calling the constructor high or low depending on parameter state.
+     * This pin can control a relay that will turn on the frontlight.
+     * @param state Boolean; true is on, false is off.
+     */
+    void setLight(bool state);
+
+    /**
+     * toggleLight function
+     * Toggles the state of the light pin set when calling the contstructor. 
+     * This pin can control a relay that will turn on the frontlight.
+     */
+    void toggleLight();
+
+    /**
      * print function
      * Prints a string to the display using the currently selected font, 
      * keep in mind that some fonts require a certain offset in order to start on the first pixel of the display.
@@ -191,7 +206,6 @@ private:
     uint BUFFER_SIZE = 0;
 
     // State of the relay that controls the frontlight
-    // TODO: Make frontlight work
     int8_t PIN_LIGHT = -1;
     bool STATE_LIGHT = false;
 

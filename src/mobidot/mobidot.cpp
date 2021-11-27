@@ -47,6 +47,23 @@ void MobiDOT::selectDisplay(MobiDOT::Display type)
     this->DISPLAY_DEFAULT = type;
 }
 
+void MobiDOT::setLight(bool state)
+{
+    if (this->PIN_LIGHT != -1)
+    {
+        digitalWrite(this->PIN_LIGHT, (state) ? HIGH : LOW);
+    }
+    this->STATE_LIGHT = state;
+}
+
+void MobiDOT::toggleLight()
+{
+    if (this->PIN_LIGHT != -1)
+    {
+        this->setLight(!this->STATE_LIGHT);
+    }
+}
+
 void MobiDOT::print(const char c[])
 {
     const MobiDOT::Font font = this->display[(uint)this->DISPLAY_DEFAULT].defaultFont;
@@ -229,7 +246,7 @@ void MobiDOT::print(const char c[], const GFXfont *font, int offsetX, int offset
         }
 
         // Draw the char
-        MobiDOT::drawBitmap(
+        this->drawBitmap(
             buffer,                                     // Bitmap buffer
             (invert) ? charXadvance + 1 : charXadvance, // Width including whitespace after char and before char if inverting
             bufferHeight,                               // Height
@@ -245,7 +262,7 @@ void MobiDOT::print(const char c[], const GFXfont *font, int offsetX, int offset
 
 void MobiDOT::drawRect(uint width, uint height, bool fill)
 {
-    MobiDOT::drawRect(width, height, 0, 0, fill);
+    this->drawRect(width, height, 0, 0, fill);
 }
 
 void MobiDOT::drawRect(uint width, uint height, int x, int y, bool fill)
@@ -296,7 +313,7 @@ void MobiDOT::drawRect(uint width, uint height, int x, int y, bool fill)
     }
 
     // Draw the rectangle
-    MobiDOT::drawBitmap(
+    this->drawBitmap(
         buffer, // Bitmap buffer
         width,  // Width
         height, // Height
@@ -355,7 +372,7 @@ void MobiDOT::drawLine(int x1, int y1, int x2, int y2)
     const int16_t drawY = min(y1, y2);
 
     // Draw the line
-    MobiDOT::drawBitmap(
+    this->drawBitmap(
         buffer,       // Bitmap buffer
         bufferWidth,  // Width
         bufferHeight, // Height

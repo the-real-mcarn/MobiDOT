@@ -7,7 +7,7 @@
 #include "Fonts/Picopixel.h"
 #include "Fonts/SilomBol8pt7b.h"
 
-MobiDOT MobiDOT(/* rx */ 5, /* tx */ 0, /* ctrl */ 4, /* light */ 3);
+MobiDOT MobiDOT(/* rx */ 5, /* tx */ 0, /* ctrl */ 4, /* light */ D7);
 
 // Compile time
 const char compile_date[] = __DATE__ " " __TIME__;
@@ -51,6 +51,7 @@ void setup()
 
   // Display setup
   MobiDOT.selectDisplay(MobiDOT::Display::REAR);
+  MobiDOT.toggleLight();
 
   // MobiDOT.print("Hi", &prstartk4pt7b, 2, 1, true);
 
