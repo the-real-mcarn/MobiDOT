@@ -91,18 +91,16 @@ void MobiDOT::print(const char c[], MobiDOT::Font font, int offsetX, int offsetY
 
     uint *size = &this->BUFFER_SIZE;
 
-    this->BUFFER_DATA[*size] = 0xd2;
-    this->BUFFER_DATA[*size + 1] = offsetX;
-    this->BUFFER_DATA[*size + 2] = 0xd3;
-    this->BUFFER_DATA[*size + 3] = offsetY;
-    this->BUFFER_DATA[*size + 4] = 0xd4;
-    this->BUFFER_DATA[*size + 5] = (char)font;
-    *size += 6;
+    this->BUFFER_DATA[(*size)++] = 0xd2;
+    this->BUFFER_DATA[(*size)++] = offsetX;
+    this->BUFFER_DATA[(*size)++] = 0xd3;
+    this->BUFFER_DATA[(*size)++] = offsetY;
+    this->BUFFER_DATA[(*size)++] = 0xd4;
+    this->BUFFER_DATA[(*size)++] = (char)font;
 
     for (size_t i = 0; i < strlen(c); i++)
     {
-        this->BUFFER_DATA[*size] = c[i];
-        *size += 1;
+        this->BUFFER_DATA[(*size)++] = c[i];
     }
 }
 
@@ -212,7 +210,7 @@ void MobiDOT::print(const char c[], const GFXfont *font, int offsetX, int offset
             // Get the value of the current bit, if it is zero we can skip it
             uint8_t charByteOffset = floor(b / 8.0); // Start with zero
             uint8_t charBitOffset = b % 8;
-            const uint8_t value = charData[charByteOffset] >> (7 - charBitOffset) & 0b00000001;
+            const uint8_t value = charData[charByteOffset] >> (7 - charBitOffset) & 0x01;
 
             // Skip if value is zero, shifting zero's is a waste of time
             if (value)
@@ -411,18 +409,16 @@ void MobiDOT::clear(bool value)
 
     for (size_t i = 0; i < ceil((float)height / 5); i++)
     {
-        this->BUFFER_DATA[*size] = 0xd2;
-        this->BUFFER_DATA[*size + 1] = 0;
-        this->BUFFER_DATA[*size + 2] = 0xd3;
-        this->BUFFER_DATA[*size + 3] = 4 + (i * 5);
-        this->BUFFER_DATA[*size + 4] = 0xd4;
-        this->BUFFER_DATA[*size + 5] = (char)MobiDOT::Font::BITWISE;
-        *size += 6;
+        this->BUFFER_DATA[(*size)++] = 0xd2;
+        this->BUFFER_DATA[(*size)++] = 0;
+        this->BUFFER_DATA[(*size)++] = 0xd3;
+        this->BUFFER_DATA[(*size)++] = 4 + (i * 5);
+        this->BUFFER_DATA[(*size)++] = 0xd4;
+        this->BUFFER_DATA[(*size)++] = (char)MobiDOT::Font::BITWISE;
 
         for (size_t j = 0; j < width; j++)
         {
-            this->BUFFER_DATA[*size] = (value) ? 0x3f : 0x20;
-            *size += 1;
+            this->BUFFER_DATA[(*size)++] = (value) ? 0x3f : 0x20;
         }
     }
 }
@@ -447,16 +443,14 @@ void MobiDOT::drawBitmap(const unsigned char data[], uint width, uint height, in
     for (int16_t i = 0; i < ceil((float)height / 5); i++)
     {
         // Add bitmap header
-        this->BUFFER_DATA[*size] = 0xd2;
-        this->BUFFER_DATA[*size + 1] = x;
-        this->BUFFER_DATA[*size + 2] = 0xd3;
-        this->BUFFER_DATA[*size + 3] = y + 4 + (i * 5);
-        this->BUFFER_DATA[*size + 4] = 0xd4;
-        this->BUFFER_DATA[*size + 5] = (char)MobiDOT::Font::BITWISE;
-        *size += 6;
+        this->BUFFER_DATA[(*size)++] = 0xd2;
+        this->BUFFER_DATA[(*size)++] = x;
+        this->BUFFER_DATA[(*size)++] = 0xd3;
+        this->BUFFER_DATA[(*size)++] = y + 4 + (i * 5);
+        this->BUFFER_DATA[(*size)++] = 0xd4;
+        this->BUFFER_DATA[(*size)++] = (char)MobiDOT::Font::BITWISE;
 
         // Go through bitmap line by line (width)
-        // for (int16_t j = (bytesOverWidth * 8 - 1); j >= (int)((bytesOverWidth * 8) - width); j--)
         for (int16_t j = 0; j <= (int)width - 1; j++)
         {
             // Result byte needs to start with 001xxxxx
@@ -473,7 +467,7 @@ void MobiDOT::drawBitmap(const unsigned char data[], uint width, uint height, in
                 if ((i * 5 + k) < (int)height)
                 {
                     // If it is in range, check the bitmap for the data
-                    // Bitmaps are padded on the right in order to fit each row into bytes, keep this in mind
+                    // Bitmaps are padded on the right in order to fit each row into full bytes, keep this in mind
 
                     // Determine the height we are at in the bitmap, i includes previous lines drawn, k is for the current line
                     int16_t byteOffset = ((i * 5) * bytesOverWidth) + (k * bytesOverWidth);
@@ -501,8 +495,7 @@ void MobiDOT::drawBitmap(const unsigned char data[], uint width, uint height, in
             }
 
             // Add result to command buffer
-            this->BUFFER_DATA[*size] = result;
-            *size += 1;
+            this->BUFFER_DATA[(*size)++] = result;
         }
     }
 }
@@ -513,14 +506,13 @@ void MobiDOT::drawBitmap(const unsigned char data[], uint width, uint height, in
 
 void MobiDOT::addHeader(MobiDOT::Display type, char data[], uint &size)
 {
-    data[size] = (char)MOBIDOT_BYTE_START;                    // Start serial transfer
-    data[size + 1] = (char)this->display[(uint)type].address; // Set address
-    data[size + 2] = (char)MOBIDOT_MODE_ASCII;                // Set ASCII mode
-    data[size + 3] = 0xd0;
-    data[size + 4] = (char)this->display[(uint)type].width; // Set display width
-    data[size + 5] = 0xd1;
-    data[size + 6] = (char)this->display[(uint)type].height; // Set display height
-    size += 7;
+    data[size++] = (char)MOBIDOT_BYTE_START;                // Start serial transfer
+    data[size++] = (char)this->display[(uint)type].address; // Set address
+    data[size++] = (char)MOBIDOT_MODE_ASCII;                // Set ASCII mode
+    data[size++] = 0xd0;
+    data[size++] = (char)this->display[(uint)type].width;   // Set display width
+    data[size++] = 0xd1;
+    data[size++] = (char)this->display[(uint)type].height;  // Set display height
     return;
 }
 
@@ -531,28 +523,26 @@ void MobiDOT::addFooter(char data[], uint &size)
     {
         checksum += data[i]; // Add up all numbers of input data
     }
-    data[size] = checksum & 0xff; // Cut down checksum to one byte
+    checksum = checksum & 0xff; // Cut down checksum to one byte
 
     // Change the checksum if it has a certain value, this probably required to prevent a conflict somewhere
-    if (data[size] == 0xfe)
+    if (checksum == 0xfe)
     {
-        data[size + 1] = 0x00;
-        size += 2;
+        data[size++] = checksum;
+        data[size++] = 0x00;
     }
-    else if (data[size] == 0xff)
+    else if (checksum == 0xff)
     {
-        data[size] = 0xfe;
-        data[size + 1] = 0x01;
-        size += 2;
+        data[size++] = 0xfe;
+        data[size++] = 0x01;
     }
     else
     {
-        size += 1;
+        data[size++] = checksum;
     }
 
-    data[size] = MOBIDOT_BYTE_STOP;
-    data[size + 1] = 0x00;
-    size += 2;
+    data[size++] = MOBIDOT_BYTE_STOP;
+    data[size++] = 0x00;
     return;
 }
 
@@ -563,14 +553,6 @@ bool MobiDOT::sendBuffer(char data[], uint size)
     digitalWrite(this->PIN_CTRL, RS485_RX_PIN_VALUE); // Set RS485 module to receive
 
     // Check if returned amount of bytes is equal to the input
-    if (result == size)
-    {
-        // Something went wrong, not all bytes were sent correctly or the input data is not set up correctly
-        return false;
-    }
-    else
-    {
-        // Transmitted data successfully
-        return true;
-    }
+    // If not, something went wrong and this will return false
+    return (result == size);
 }
