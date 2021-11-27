@@ -251,27 +251,27 @@ void MobiDOT::drawRect(uint width, uint height, bool fill)
 void MobiDOT::drawRect(uint width, uint height, int x, int y, bool fill)
 {
     // Determine width of the buffer
-    const uint8_t bufferW = ceil((width) / 8.0);
+    const uint8_t bufferByteW = ceil((width) / 8.0);
 
     // Create buffer
-    uint8_t *buffer = new uint8_t[bufferW * height];
+    uint8_t *buffer = new uint8_t[bufferByteW * height];
 
     // Just the outline or fill the entire thing?
     if (fill)
     {
         // Easy, just fill the buffer with 1's and send it to drawBitmap
-        memset(buffer, 0xff, bufferW * height);
+        memset(buffer, 0xff, bufferByteW * height);
     }
     else
     {
         // Slightly more complicated
-        memset(buffer, 0, bufferW * height);
+        memset(buffer, 0, bufferByteW * height);
 
         // Horizontal lines
-        for (size_t i = 0; i < bufferW; i++)
+        for (size_t i = 0; i < bufferByteW; i++)
         {
             buffer[i] = 0xff;
-            buffer[i + (height - 1) * bufferW] = 0xff;
+            buffer[i + (height - 1) * bufferByteW] = 0xff;
         }
 
         // Vertical lines
@@ -288,21 +288,80 @@ void MobiDOT::drawRect(uint width, uint height, int x, int y, bool fill)
 
         for (size_t i = 0; i < height; i++)
         {
-            buffer[i * bufferW] = buffer[i * bufferW] | 0x80;
+            buffer[i * bufferByteW] = buffer[i * bufferByteW] | 0x80;
 
             char value = 0x01 << bitOffset;
-            buffer[i * bufferW + byteOffset] = buffer[i * bufferW + byteOffset] | value;
+            buffer[i * bufferByteW + byteOffset] = buffer[i * bufferByteW + byteOffset] | value;
         }
     }
 
     // Draw the rectangle
     MobiDOT::drawBitmap(
         buffer, // Bitmap buffer
-        width,  // Width including whitespace after char and before char if inverting
+        width,  // Width
         height, // Height
         x,      // X offset
         y,      // Y offset
         true    // Invert
+    );
+}
+
+void MobiDOT::drawLine(int x1, int y1, int x2, int y2)
+{
+    // Determine buffer size
+    const uint8_t bufferHeight = abs(y2 - y1) + 1;
+    const uint8_t bufferWidth = abs(x2 - x1);
+
+    const uint8_t bufferByteW = ceil((bufferWidth) / 8.0);
+
+    // Create buffer and zero it
+    uint8_t *buffer = new uint8_t[bufferByteW * bufferHeight];
+    memset(buffer, 0, bufferByteW * bufferHeight);
+
+    // Imagine the line between the two points is equal to y = rc * x + b
+    // First we determine direction rc
+    const float rc = (float)(y2 - y1) / (float)(x2 - x1);
+
+    // Solve for b (b = y - rc * x)
+    const float b = y1 - rc * x1;
+
+    // Now we can determine all other points
+    int16_t start = min(x1, x2);
+    int16_t length = bufferWidth;
+
+    for (int16_t x = start; x <= length; x++)
+    {
+        // Determine y
+        const int y = (int)round(rc * (float)x + b);
+
+        // Determine position in buffer
+        uint8_t byteOffset = y * bufferByteW;
+        uint8_t bitOffset = x;
+
+        while (bitOffset > 8)
+        {
+            bitOffset = bitOffset - 8;
+            byteOffset++;
+        }
+
+        bitOffset = 8 - bitOffset;
+
+        char value = 0x01 << bitOffset;
+        buffer[byteOffset] = buffer[byteOffset] | value;
+    }
+
+    // Determine drawing position
+    const int16_t drawX = start;
+    const int16_t drawY = min(y1, y2);
+
+    // Draw the line
+    MobiDOT::drawBitmap(
+        buffer,       // Bitmap buffer
+        bufferWidth,  // Width
+        bufferHeight, // Height
+        drawX,        // X offset
+        drawY,        // Y offset
+        true          // Invert
     );
 }
 

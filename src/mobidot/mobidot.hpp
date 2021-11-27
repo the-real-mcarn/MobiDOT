@@ -165,6 +165,16 @@ public:
     void drawRect(uint width, uint height, bool fill = true);
     void drawRect(uint width, uint height, int x, int y, bool fill = true);
 
+    /**
+     * drawLine function
+     * Draws a line between two points with given coordinates x1, y1 and x2, y2
+     * @param x1 
+     * @param y1 
+     * @param x2 
+     * @param y2 
+     */
+    void drawLine(int x1, int y1, int x2, int y2);
+
 private:
     // Serial communication parameters
     SoftwareSerial RS485;
