@@ -50,11 +50,17 @@ void setup()
   Serial.println(WiFi.localIP());
 
   // Display setup
-  MobiDOT.selectDisplay(MobiDOT::Display::REAR);
+  MobiDOT.selectDisplay(MobiDOT::Display::FRONT);
   MobiDOT.toggleLight();
 
-  MobiDOT.print("Hi", &prstartk4pt7b, 2, 1, true);
-  MobiDOT.print("there!", &Picopixel, 1, 9, false);
+  MobiDOT.drawLine(5, 0, 36, 5);
+  MobiDOT.drawLine(16, 15, 36, 5);
+  MobiDOT.drawLine(5, 0, 15, 15);
+
+  MobiDOT.print("Progress:", &prstartk4pt7b, 40, 1, false);
+  MobiDOT.drawRect(50, 6, 40, 9, false);
+  MobiDOT.drawRect(30, 6, 40, 9, true);
+  MobiDOT.print("60 %", &Picopixel, 92, 9, false);
 
   MobiDOT.update();
 }

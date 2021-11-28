@@ -341,17 +341,18 @@ void MobiDOT::drawLine(int x1, int y1, int x2, int y2)
     const float b = y1 - rc * x1;
 
     // Now we can determine all other points
-    int16_t start = min(x1, x2);
+    const int16_t startX = min(x1, x2);
+    const int16_t startY = min(y1, y2);
     int16_t length = bufferWidth;
 
-    for (int16_t x = start; x <= length; x++)
+    for (int16_t x = startX; x <= length + startX; x++)
     {
         // Determine y
-        const int y = (int)round(rc * (float)x + b);
+        const int y = (int)round(rc * (float)x + b) - startY;
 
         // Determine position in buffer
         uint8_t byteOffset = y * bufferByteW;
-        uint8_t bitOffset = x;
+        uint8_t bitOffset = x - startX;
 
         while (bitOffset > 8)
         {
@@ -365,17 +366,13 @@ void MobiDOT::drawLine(int x1, int y1, int x2, int y2)
         buffer[byteOffset] = buffer[byteOffset] | value;
     }
 
-    // Determine drawing position
-    const int16_t drawX = start;
-    const int16_t drawY = min(y1, y2);
-
     // Draw the line
     this->drawBitmap(
         buffer,       // Bitmap buffer
         bufferWidth,  // Width
         bufferHeight, // Height
-        drawX,        // X offset
-        drawY,        // Y offset
+        startX,        // X offset
+        startY,        // Y offset
         true          // Invert
     );
 }
@@ -510,9 +507,9 @@ void MobiDOT::addHeader(MobiDOT::Display type, char data[], uint &size)
     data[size++] = (char)this->display[(uint)type].address; // Set address
     data[size++] = (char)MOBIDOT_MODE_ASCII;                // Set ASCII mode
     data[size++] = 0xd0;
-    data[size++] = (char)this->display[(uint)type].width;   // Set display width
+    data[size++] = (char)this->display[(uint)type].width; // Set display width
     data[size++] = 0xd1;
-    data[size++] = (char)this->display[(uint)type].height;  // Set display height
+    data[size++] = (char)this->display[(uint)type].height; // Set display height
     return;
 }
 
