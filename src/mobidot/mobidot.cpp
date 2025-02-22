@@ -1,9 +1,9 @@
 /**
  * @file mobidot.cpp
  * Main source file for MobiDOT display library
- * 
- * Arduino library for communicating with the Mobitec MobiDOT flipdot displays based on the RS485 protocol. 
- * 
+ *
+ * Arduino library for communicating with the Mobitec MobiDOT flipdot displays based on the RS485 protocol.
+ *
  * Copyright (c) 2021 Arne van Iterson
  */
 
@@ -16,7 +16,8 @@
 MobiDOT::MobiDOT(const uint8_t rx, const uint8_t tx, const uint8_t ctrl, const uint8_t light)
 {
     // Start software serial
-    this->RS485.begin(RS485_BAUDRATE, SWSERIAL_8N1, rx, tx);
+    // this->RS485.begin(RS485_BAUDRATE, SWSERIAL_8N1, rx, tx);
+    this->RS485.begin(RS485_BAUDRATE);
     delay(10);
 
     // Init control pin
@@ -255,6 +256,10 @@ void MobiDOT::print(const char c[], const GFXfont *font, int offsetX, int offset
 
         // Update cursor for the next char
         cursor = cursor + charXadvance;
+
+        // Delete buffers
+        delete charData;
+        delete buffer;
     }
 };
 
@@ -319,6 +324,8 @@ void MobiDOT::drawRect(uint width, uint height, int x, int y, bool fill)
         y,      // Y offset
         true    // Invert
     );
+
+    delete buffer;
 }
 
 void MobiDOT::drawLine(int x1, int y1, int x2, int y2)
@@ -371,10 +378,12 @@ void MobiDOT::drawLine(int x1, int y1, int x2, int y2)
         buffer,       // Bitmap buffer
         bufferWidth,  // Width
         bufferHeight, // Height
-        startX,        // X offset
-        startY,        // Y offset
+        startX,       // X offset
+        startY,       // Y offset
         true          // Invert
     );
+
+    delete buffer;
 }
 
 bool MobiDOT::update()
@@ -547,6 +556,7 @@ bool MobiDOT::sendBuffer(char data[], uint size)
 {
     digitalWrite(this->PIN_CTRL, RS485_TX_PIN_VALUE); // Set RS485 module to transmit
     size_t result = this->RS485.write(data, size);    // Write data
+    this->RS485.flush();
     digitalWrite(this->PIN_CTRL, RS485_RX_PIN_VALUE); // Set RS485 module to receive
 
     // Check if returned amount of bytes is equal to the input

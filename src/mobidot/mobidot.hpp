@@ -1,9 +1,9 @@
 /**
  * @file mobidot.hpp
  * Main header file for MobiDOT display library
- * 
- * Arduino library for communicating with the Mobitec MobiDOT flipdot displays based on the RS485 protocol. 
- * 
+ *
+ * Arduino library for communicating with the Mobitec MobiDOT flipdot displays based on the RS485 protocol.
+ *
  * Copyright (c) 2021 Arne van Iterson
  */
 
@@ -116,14 +116,14 @@ public:
 
     /**
      * toggleLight function
-     * Toggles the state of the light pin set when calling the contstructor. 
+     * Toggles the state of the light pin set when calling the contstructor.
      * This pin can control a relay that will turn on the frontlight.
      */
     void toggleLight();
 
     /**
      * print function
-     * Prints a string to the display using the currently selected font, 
+     * Prints a string to the display using the currently selected font,
      * keep in mind that some fonts require a certain offset in order to start on the first pixel of the display.
      * This function can only use fonts built into the MobiDOT units
      * @param c[] String to print
@@ -183,16 +183,17 @@ public:
     /**
      * drawLine function
      * Draws a line between two points with given coordinates x1, y1 and x2, y2
-     * @param x1 
-     * @param y1 
-     * @param x2 
-     * @param y2 
+     * @param x1
+     * @param y1
+     * @param x2
+     * @param y2
      */
     void drawLine(int x1, int y1, int x2, int y2);
 
 private:
     // Serial communication parameters
-    SoftwareSerial RS485;
+    // SoftwareSerial RS485;
+    HardwareSerial &RS485 = Serial1;
     uint8_t PIN_CTRL;
 
     // Current display storage
